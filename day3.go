@@ -52,3 +52,49 @@ func splitLine(line string) ([]int, error) {
 	}
 	return nums, nil
 }
+
+func day3part2(input []byte) (string, error) {
+	sum := 0
+	for line := range strings.Lines(string(input)) {
+		nums, err := splitLine(strings.TrimSpace(line))
+		if err != nil {
+			return "", err
+		}
+
+		goalLen := 12
+		maxNums := []int{}
+		start := 0
+		for n := goalLen; n > 0; n-- {
+			end := len(nums) - n
+			newMaxIndex := getNthMax(nums, start, end)
+			maxNums = append(maxNums, nums[newMaxIndex])
+			start = newMaxIndex + 1
+		}
+
+		result, err := joinNumAsStr(maxNums)
+		if err != nil {
+			return "", err
+		}
+		sum += result
+	}
+	return strconv.Itoa(sum), nil
+}
+
+func getNthMax(nums []int, start, end int) int {
+	maxIndex := start
+	for i := start; i <= end; i++ {
+		if nums[maxIndex] < nums[i] {
+			maxIndex = i
+		}
+	}
+	return maxIndex
+}
+
+func joinNumAsStr(nums []int) (int, error) {
+	s := ""
+	for _, num := range nums {
+		s += strconv.Itoa(num)
+	}
+	return strconv.Atoi(s)
+
+}
