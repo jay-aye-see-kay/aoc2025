@@ -7,37 +7,26 @@ import (
 
 func day4part1(input []byte) (string, error) {
 	grid := NewGrid(string(input))
-	count := 0
-	for cell, hasRoll := range grid.cells {
-		if hasRoll && grid.countNeighbors(cell) <= 4 {
-			count += 1
-		}
-	}
+	count := len(grid.findRemovable())
 	return strconv.Itoa(count), nil
 }
 
 func day4part2(input []byte) (string, error) {
 	grid := NewGrid(string(input))
+	initialCount := grid.count()
 
-	count := grid.count()
-	initialCount := count
-
+	count := initialCount
 	for {
-		toRemove := []Coord{}
-		for cell, hasRoll := range grid.cells {
-			if hasRoll && grid.countNeighbors(cell) <= 4 {
-				toRemove = append(toRemove, cell)
-			}
+		// remove what can be
+		for _, removable := range grid.findRemovable() {
+			grid.cells[removable] = false
 		}
-		// remove it
-		for _, cell := range toRemove {
-			grid.cells[cell] = false
-		}
+		// stop once not more can be removed
 		newCount := grid.count()
-		if newCount == count {
-			return strconv.Itoa(initialCount - newCount), nil
-		} else {
+		if newCount < count {
 			count = newCount
+		} else {
+			return strconv.Itoa(initialCount - newCount), nil
 		}
 	}
 }
@@ -71,6 +60,16 @@ func (g *Grid) count() int {
 		}
 	}
 	return totalRolls
+}
+
+func (g *Grid) findRemovable() []Coord {
+	removable := []Coord{}
+	for cell, hasRoll := range g.cells {
+		if hasRoll && g.countNeighbors(cell) <= 4 {
+			removable = append(removable, cell)
+		}
+	}
+	return removable
 }
 
 func (g *Grid) neighbors(cell Coord) []Coord {
