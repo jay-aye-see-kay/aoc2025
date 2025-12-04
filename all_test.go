@@ -30,6 +30,8 @@ func Test_all(t *testing.T) {
 		{"day3", 2, day3part2, "168575096286051"},
 		{"day4_sample", 1, day4part1, "13"},
 		{"day4", 1, day4part1, "1489"},
+		{"day4_sample", 2, day4part2, "43"},
+		{"day4", 2, day4part2, "8890"},
 	}
 
 	for _, tt := range tests {
