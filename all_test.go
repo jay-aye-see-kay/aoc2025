@@ -11,40 +11,49 @@ import (
 
 func Test_all(t *testing.T) {
 	tests := []struct {
-		name     string
+		day      int
 		part     int
+		sample   bool
 		fn       func([]byte) (string, error)
 		expected string
 	}{
-		{"day1_sample", 1, day1part1, "3"},
-		{"day1", 1, day1part1, "964"},
-		{"day1_sample", 2, day1part2, "6"},
-		{"day1", 2, day1part2, "5872"},
+		{1, 1, true, day1part1, "3"},
+		{1, 1, false, day1part1, "964"},
+		{1, 2, true, day1part2, "6"},
+		{1, 2, false, day1part2, "5872"},
 
-		{"day2_sample", 1, day2part1, "1227775554"},
-		{"day2", 1, day2part1, "13919717792"},
-		{"day2_sample", 2, day2part2, "4174379265"},
-		{"day2", 2, day2part2, "14582313461"},
+		{2, 1, true, day2part1, "1227775554"},
+		{2, 1, false, day2part1, "13919717792"},
+		{2, 2, true, day2part2, "4174379265"},
+		{2, 2, false, day2part2, "14582313461"},
 
-		{"day3_sample", 1, day3part1, "357"},
-		{"day3", 1, day3part1, "17031"},
-		{"day3_sample", 2, day3part2, "3121910778619"},
-		{"day3", 2, day3part2, "168575096286051"},
+		{3, 1, true, day3part1, "357"},
+		{3, 1, false, day3part1, "17031"},
+		{3, 2, true, day3part2, "3121910778619"},
+		{3, 2, false, day3part2, "168575096286051"},
 
-		{"day4_sample", 1, day4part1, "13"},
-		{"day4", 1, day4part1, "1489"},
-		{"day4_sample", 2, day4part2, "43"},
-		{"day4", 2, day4part2, "8890"},
+		{4, 1, true, day4part1, "13"},
+		{4, 1, false, day4part1, "1489"},
+		{4, 2, true, day4part2, "43"},
+		{4, 2, false, day4part2, "8890"},
 
-		{"day5_sample", 1, day5part1, "3"},
-		{"day5", 1, day5part1, "640"},
-		{"day5_sample", 2, day5part2, "14"},
-		{"day5", 2, day5part2, "365804144481581"},
+		{5, 1, true, day5part1, "3"},
+		{5, 1, false, day5part1, "640"},
+		{5, 2, true, day5part2, "14"},
+		{5, 2, false, day5part2, "365804144481581"},
 	}
 
 	for _, tt := range tests {
-		t.Run(fmt.Sprintf("%s part %d", tt.name, tt.part), func(t *testing.T) {
-			input, err := os.ReadFile("./inputs/" + tt.name + ".txt")
+		filename := fmt.Sprintf("day%d", tt.day)
+		testName := filename
+		if tt.sample {
+			filename += "_sample"
+			testName += " sample"
+		}
+		testName = fmt.Sprintf("%s part %d", testName, tt.part)
+
+		t.Run(testName, func(t *testing.T) {
+			input, err := os.ReadFile("./inputs/" + filename + ".txt")
 			require.NoError(t, err)
 			result, err := tt.fn(input)
 			require.NoError(t, err)
