@@ -5,21 +5,21 @@ import (
 	"strings"
 )
 
-func day1part1(input []byte) (string, error) {
+func day1part1(input []byte) (int, error) {
 	zero_stops, _, err := _day1(input)
 	if err != nil {
-		return "", err
+		return 0, err
 	}
-	return strconv.Itoa(zero_stops), nil
+	return zero_stops, nil
 
 }
 
-func day1part2(input []byte) (string, error) {
+func day1part2(input []byte) (int, error) {
 	_, zero_passes, err := _day1(input)
 	if err != nil {
-		return "", err
+		return 0, err
 	}
-	return strconv.Itoa(zero_passes), nil
+	return zero_passes, nil
 }
 
 func _day1(input []byte) (int, int, error) {

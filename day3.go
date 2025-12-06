@@ -5,20 +5,20 @@ import (
 	"strings"
 )
 
-func day3part1(input []byte) (string, error) {
+func day3part1(input []byte) (int, error) {
 	return _day3(input, 2)
 }
 
-func day3part2(input []byte) (string, error) {
+func day3part2(input []byte) (int, error) {
 	return _day3(input, 12)
 }
 
-func _day3(input []byte, goalLen int) (string, error) {
+func _day3(input []byte, goalLen int) (int, error) {
 	sum := 0
 	for line := range strings.Lines(string(input)) {
 		nums, err := splitNumAsStr(line)
 		if err != nil {
-			return "", err
+			return 0, err
 		}
 
 		maxNums := []int{}
@@ -32,11 +32,11 @@ func _day3(input []byte, goalLen int) (string, error) {
 
 		result, err := joinNumsAsStr(maxNums)
 		if err != nil {
-			return "", err
+			return 0, err
 		}
 		sum += result
 	}
-	return strconv.Itoa(sum), nil
+	return sum, nil
 }
 
 func getNthMaxIndex(nums []int, start, end int) int {

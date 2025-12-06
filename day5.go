@@ -36,10 +36,10 @@ func day5parse(input []byte) ([]Range, []int, error) {
 	return ranges, ids, nil
 }
 
-func day5part1(input []byte) (string, error) {
+func day5part1(input []byte) (int, error) {
 	freshRanges, ingredientIDs, err := day5parse(input)
 	if err != nil {
-		return "", err
+		return 0, err
 	}
 
 	count := 0
@@ -52,13 +52,13 @@ func day5part1(input []byte) (string, error) {
 		}
 	}
 
-	return strconv.Itoa(count), nil
+	return count, nil
 }
 
-func day5part2(input []byte) (string, error) {
+func day5part2(input []byte) (int, error) {
 	freshRanges, _, err := day5parse(input)
 	if err != nil {
-		return "", err
+		return 0, err
 	}
 
 	moreToMerge := true
@@ -71,7 +71,7 @@ func day5part2(input []byte) (string, error) {
 		count += r.count()
 	}
 
-	return strconv.Itoa(count), nil
+	return count, nil
 }
 
 func mergeOverlapping(ranges []Range) ([]Range, bool) {

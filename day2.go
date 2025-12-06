@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func day2part1(input []byte) (string, error) {
+func day2part1(input []byte) (int, error) {
 	isValid := func(id int) bool {
 		id_str := strconv.Itoa(id)
 		if len(id_str)%2 != 0 {
@@ -21,7 +21,7 @@ func day2part1(input []byte) (string, error) {
 	return _day2(input, isValid)
 }
 
-func day2part2(input []byte) (string, error) {
+func day2part2(input []byte) (int, error) {
 	isValid := func(id int) bool {
 		id_str := strconv.Itoa(id)
 		chunk_groups := getEqualChunks(id_str)
@@ -60,22 +60,22 @@ func getEqualChunks(input string) [][]string {
 	return chunk_groups
 }
 
-func _day2(input []byte, isValid func(int) bool) (string, error) {
+func _day2(input []byte, isValid func(int) bool) (int, error) {
 	sum := 0
 
 	for pair := range strings.SplitSeq(string(input), ",") {
 		split_pairs := strings.Split(strings.TrimSpace(pair), "-")
 		if len(split_pairs) != 2 {
-			return "", fmt.Errorf("invalid pair %s", pair)
+			return 0, fmt.Errorf("invalid pair %s", pair)
 		}
 		start_str, end_str := split_pairs[0], split_pairs[1]
 		start, err := strconv.Atoi(start_str)
 		if err != nil {
-			return "", err
+			return 0, err
 		}
 		end, err := strconv.Atoi(end_str)
 		if err != nil {
-			return "", err
+			return 0, err
 		}
 		for i := start; i <= end; i++ {
 			if !isValid(i) {
@@ -84,5 +84,5 @@ func _day2(input []byte, isValid func(int) bool) (string, error) {
 		}
 	}
 
-	return strconv.Itoa(sum), nil
+	return sum, nil
 }

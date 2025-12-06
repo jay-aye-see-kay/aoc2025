@@ -1,17 +1,16 @@
 package aoc2025
 
 import (
-	"strconv"
 	"strings"
 )
 
-func day4part1(input []byte) (string, error) {
+func day4part1(input []byte) (int, error) {
 	grid := NewGrid(string(input))
 	count := len(grid.findRemovable())
-	return strconv.Itoa(count), nil
+	return count, nil
 }
 
-func day4part2(input []byte) (string, error) {
+func day4part2(input []byte) (int, error) {
 	grid := NewGrid(string(input))
 	initialCount := grid.count()
 
@@ -26,7 +25,7 @@ func day4part2(input []byte) (string, error) {
 		if newCount < count {
 			count = newCount
 		} else {
-			return strconv.Itoa(initialCount - newCount), nil
+			return initialCount - newCount, nil
 		}
 	}
 }
