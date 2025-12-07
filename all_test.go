@@ -49,8 +49,8 @@ func Test_all(t *testing.T) {
 
 		{7, 1, true, day7part1, 21},
 		{7, 1, false, day7part1, 1626},
-		// {7, 2, true, day7part2, 0},
-		// {7, 2, false, day7part2, 0},
+		{7, 2, true, day7part2, 40},
+		{7, 2, false, day7part2, 48989920237096},
 	}
 
 	for _, tt := range tests {
