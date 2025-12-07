@@ -6,6 +6,7 @@ import (
 
 func day7part1(input []byte) (int, error) {
 	var (
+		empty    = byte('.')
 		start    = byte('S')
 		splitter = byte('^')
 		beam     = byte('|')
@@ -18,11 +19,15 @@ func day7part1(input []byte) (int, error) {
 		grid = append(grid, bytes.TrimSpace(row))
 	}
 
-	for x, row := range grid {
+	for x, row := range grid[:len(grid)-1] {
 		for y, col := range row {
 			switch col {
-			case start:
-				grid[x+1][y] = beam
+			case empty:
+			// do nothing
+			case beam:
+				if grid[x+1][y] != splitter {
+					grid[x+1][y] = beam
+				}
 			case splitter:
 				if grid[x-1][y] == beam {
 					grid[x][y-1] = beam
@@ -30,10 +35,8 @@ func day7part1(input []byte) (int, error) {
 					grid[x+1][y-1] = beam
 					splitCount += 1
 				}
-			case beam:
-				if x < len(row) && y < len(grid) && grid[x+1][y] != splitter {
-					grid[x+1][y] = beam
-				}
+			case start:
+				grid[x+1][y] = beam
 			}
 		}
 	}
