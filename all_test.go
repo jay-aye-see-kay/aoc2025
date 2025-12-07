@@ -46,6 +46,11 @@ func Test_all(t *testing.T) {
 		{6, 1, false, day6part1, 5227286044585},
 		// {6, 2, true, day6part2, 0},
 		// {6, 2, false, day6part2, 0},
+
+		{7, 1, true, day7part1, 21},
+		{7, 1, false, day7part1, 1626},
+		// {7, 2, true, day7part2, 0},
+		// {7, 2, false, day7part2, 0},
 	}
 
 	for _, tt := range tests {
@@ -62,7 +67,7 @@ func Test_all(t *testing.T) {
 			require.NoError(t, err)
 			result, err := tt.fn(input)
 			require.NoError(t, err)
-			assert.Equal(t, result, tt.expected)
+			assert.Equal(t, tt.expected, result)
 		})
 	}
 }

@@ -23,6 +23,8 @@ func BenchmarkAll(b *testing.B) {
 		{5, 1, day5part1},
 		{5, 2, day5part2},
 		{6, 1, day6part1},
+		// {6, 2, day6part2},
+		{7, 1, day7part1},
 	}
 
 	for _, bm := range benchmarks {
