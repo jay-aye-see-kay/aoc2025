@@ -48,20 +48,19 @@ func day7part2(input []byte) (int, error) {
 		start    = -2
 		splitter = -1
 
-		grid = [][]int{}
+		grid = make([][]int, 0, bytes.Count(input, []byte{'\n'}))
 	)
 
 	// build a grid where negative numbers are special chars, postive are path counts
 	for row := range bytes.Lines(input) {
-		newRow := []int{}
-		for _, col := range bytes.TrimSpace(row) {
+		row = bytes.TrimSpace(row)
+		newRow := make([]int, len(row))
+		for i, col := range row {
 			switch col {
 			case byte('S'):
-				newRow = append(newRow, start)
+				newRow[i] = start
 			case byte('^'):
-				newRow = append(newRow, splitter)
-			default:
-				newRow = append(newRow, 0)
+				newRow[i] = splitter
 			}
 		}
 		grid = append(grid, newRow)
@@ -82,7 +81,7 @@ func day7part2(input []byte) (int, error) {
 					grid[x+1][y+1] += inputCount
 				}
 			case col > 0:
-				if x < len(row) && y < len(grid) && grid[x+1][y] != splitter {
+				if grid[x+1][y] != splitter {
 					grid[x+1][y] = grid[x][y]
 				}
 			}
