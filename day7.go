@@ -70,8 +70,12 @@ func day7part2(input []byte) (int, error) {
 	for x, row := range grid[:len(grid)-1] {
 		for y, col := range row {
 			switch {
-			case col == start:
-				grid[x+1][y] = 1
+			case col == 0:
+			// nothing
+			case col > 0:
+				if grid[x+1][y] != splitter {
+					grid[x+1][y] = grid[x][y]
+				}
 			case col == splitter:
 				inputCount := grid[x-1][y]
 				if inputCount > 0 {
@@ -80,14 +84,13 @@ func day7part2(input []byte) (int, error) {
 					grid[x+1][y-1] += inputCount
 					grid[x+1][y+1] += inputCount
 				}
-			case col > 0:
-				if grid[x+1][y] != splitter {
-					grid[x+1][y] = grid[x][y]
-				}
+			case col == start:
+				grid[x+1][y] = 1
 			}
 		}
 	}
 
+	// sum path counts in last row
 	count := 0
 	for _, c := range grid[len(grid)-1] {
 		count += c
