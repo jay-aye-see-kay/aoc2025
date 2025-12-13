@@ -54,8 +54,8 @@ func Test_all(t *testing.T) {
 
 		{8, 1, true, day8part1, 40},
 		{8, 1, false, day8part1, 153328},
-		// {8, 2, true, day8part2, 0},
-		// {8, 2, false, day8part2, 0},
+		{8, 2, true, day8part2, 25272},
+		{8, 2, false, day8part2, 6095621910},
 	}
 
 	for _, tt := range tests {

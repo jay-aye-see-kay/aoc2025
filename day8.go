@@ -79,7 +79,9 @@ func sortedPairs(points []Point, limit int) []*Pair {
 	slices.SortFunc(pairs, func(p1 *Pair, p2 *Pair) int {
 		return p1.distSquared - p2.distSquared
 	})
-	// todo sort by distSquared
+	if limit < 0 {
+		return pairs
+	}
 	return pairs[:limit]
 }
 
@@ -165,6 +167,76 @@ func day8part1(input []byte) (int, error) {
 }
 
 func day8part2(input []byte) (int, error) {
+	points, err := day8Parse(input)
+	if err != nil {
+		return 0, err
+	}
+	shortestPairs := sortedPairs(points, -1)
+
+	pointSet := make(map[*Point]struct{})
+
+	// make 10 connections for sample (1000 for real data)
+	var circuits Circuits
+
+	addToCircuits := func(pair *Pair) {
+		pointSet[pair.p1] = struct{}{}
+		pointSet[pair.p2] = struct{}{}
+
+		var p1FoundAt *Circuit
+		var p2FoundAt *Circuit
+
+		for _, circuit := range circuits {
+			_, p1Found := circuit.points[pair.p1]
+			_, p2Found := circuit.points[pair.p2]
+
+			// CASE 1: both connected in this circuit, do nothing
+			if p1Found && p2Found {
+				return
+			}
+
+			// CASE 2: one in this circuit, add the other point, and the pair
+			if p1Found {
+				circuit.points[pair.p2] = struct{}{}
+				p1FoundAt = circuit
+			}
+			if p2Found {
+				circuit.points[pair.p1] = struct{}{}
+				p2FoundAt = circuit
+			}
+		}
+
+		// CASE 3: found in two circuts, merge!
+		if p1FoundAt != nil && p2FoundAt != nil {
+			// merge second circuit into first
+			for k := range p2FoundAt.points {
+				p1FoundAt.points[k] = struct{}{}
+			}
+			// delete second circuit
+			circuits = slices.DeleteFunc(circuits, func(c *Circuit) bool {
+				return c == p2FoundAt
+			})
+		}
+
+		// CASE 2 (part 2), found one, added it, can exit
+		if p1FoundAt != nil || p2FoundAt != nil {
+			return
+		}
+
+		// CASE 4: not in any circuit create new one
+		circuits = append(circuits, &Circuit{
+			points: map[*Point]struct{}{
+				pair.p1: {},
+				pair.p2: {},
+			},
+		})
+	}
+	for _, pair := range shortestPairs {
+		addToCircuits(pair)
+		if len(pointSet) == len(points) {
+			return pair.p1.X * pair.p2.X, nil
+		}
+	}
+
 	return 0, nil
 }
 
