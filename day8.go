@@ -13,6 +13,66 @@ type Point struct {
 	Z int
 }
 
+type Pair struct {
+	p1          *Point
+	p2          *Point
+	distSquared int
+}
+
+type Circuit struct {
+	points map[*Point]struct{}
+}
+
+type Circuits []*Circuit
+
+func day8part1(input []byte) (int, error) {
+	points, err := day8Parse(input)
+	if err != nil {
+		return 0, err
+	}
+	// sample input length is 230, real is 17696, use that to detect how many pair to join into circuits
+	pairs := 1000
+	if len(input) < 1000 {
+		pairs = 10
+	}
+	shortestPairs := sortedPairs(points, pairs)
+
+	var circuits Circuits
+	for _, pair := range shortestPairs {
+		addToCircuits(pair, &circuits, nil)
+	}
+
+	slices.SortFunc(circuits, func(c1 *Circuit, c2 *Circuit) int {
+		return len(c2.points) - len(c1.points)
+	})
+
+	answer := 1
+	for _, c := range circuits[:3] {
+		answer *= len(c.points)
+	}
+	return answer, nil
+}
+
+func day8part2(input []byte) (int, error) {
+	points, err := day8Parse(input)
+	if err != nil {
+		return 0, err
+	}
+	pairs := sortedPairs(points, -1)
+
+	pointSet := make(map[*Point]struct{})
+	var circuits Circuits
+
+	for _, pair := range pairs {
+		addToCircuits(pair, &circuits, pointSet)
+		if len(pointSet) == len(points) {
+			return pair.p1.X * pair.p2.X, nil
+		}
+	}
+
+	return 0, fmt.Errorf("did not find last pair to complete one circuit")
+}
+
 func day8Parse(input []byte) ([]Point, error) {
 	var points []Point
 	for line := range bytes.Lines(input) {
@@ -42,28 +102,6 @@ func day8Parse(input []byte) ([]Point, error) {
 	return points, nil
 }
 
-type Pair struct {
-	p1          *Point
-	p2          *Point
-	distSquared int
-}
-
-type Circuit struct {
-	points map[*Point]struct{}
-}
-
-type Circuits []*Circuit
-
-func (c Circuits) Print() {
-	fmt.Printf("%d circuits:\n", len(c))
-	for i, c := range c {
-		fmt.Printf("  circuit %d, has %d points:\n", i+1, len(c.points))
-		for p := range c.points {
-			fmt.Printf("    %+v\n", p)
-		}
-	}
-}
-
 // IDEA: use heap with a limit so we don't have to sort 1mil pairs
 // https://pkg.go.dev/container/heap#example-package-IntHeap
 func sortedPairs(points []Point, limit int) []*Pair {
@@ -85,159 +123,59 @@ func sortedPairs(points []Point, limit int) []*Pair {
 	return pairs[:limit]
 }
 
-// we have 1000, points and 1mil pairs, we want top 1000 pairs sorted
-func day8part1(input []byte) (int, error) {
-	points, err := day8Parse(input)
-	if err != nil {
-		return 0, err
-	}
-	// sample input length is 230, real is 17696, use that to detect how many pair to join into circuits
-	pairLimit := 10
-	if len(input) > 1000 {
-		pairLimit = 1000
-	}
-	shortestPairs := sortedPairs(points, pairLimit)
-
-	// make 10 connections for sample (1000 for real data)
-	var circuits Circuits
-
-	addToCircuits := func(pair *Pair) {
-		var p1FoundAt *Circuit
-		var p2FoundAt *Circuit
-
-		for _, circuit := range circuits {
-			_, p1Found := circuit.points[pair.p1]
-			_, p2Found := circuit.points[pair.p2]
-
-			// CASE 1: both connected in this circuit, do nothing
-			if p1Found && p2Found {
-				return
-			}
-
-			// CASE 2: one in this circuit, add the other point, and the pair
-			if p1Found {
-				circuit.points[pair.p2] = struct{}{}
-				p1FoundAt = circuit
-			}
-			if p2Found {
-				circuit.points[pair.p1] = struct{}{}
-				p2FoundAt = circuit
-			}
-		}
-
-		// CASE 3: found in two circuts, merge!
-		if p1FoundAt != nil && p2FoundAt != nil {
-			// merge second circuit into first
-			for k := range p2FoundAt.points {
-				p1FoundAt.points[k] = struct{}{}
-			}
-			// delete second circuit
-			circuits = slices.DeleteFunc(circuits, func(c *Circuit) bool {
-				return c == p2FoundAt
-			})
-		}
-
-		// CASE 2 (part 2), found one, added it, can exit
-		if p1FoundAt != nil || p2FoundAt != nil {
-			return
-		}
-
-		// CASE 4: not in any circuit create new one
-		circuits = append(circuits, &Circuit{
-			points: map[*Point]struct{}{
-				pair.p1: {},
-				pair.p2: {},
-			},
-		})
-	}
-	for _, pair := range shortestPairs {
-		addToCircuits(pair)
-	}
-
-	slices.SortFunc(circuits, func(c1 *Circuit, c2 *Circuit) int {
-		return len(c2.points) - len(c1.points)
-	})
-
-	answer := 1
-	for _, c := range circuits[:3] {
-		answer *= len(c.points)
-	}
-
-	return answer, nil
-}
-
-func day8part2(input []byte) (int, error) {
-	points, err := day8Parse(input)
-	if err != nil {
-		return 0, err
-	}
-	shortestPairs := sortedPairs(points, -1)
-
-	pointSet := make(map[*Point]struct{})
-
-	// make 10 connections for sample (1000 for real data)
-	var circuits Circuits
-
-	addToCircuits := func(pair *Pair) {
+func addToCircuits(pair *Pair, circuits *Circuits, pointSet map[*Point]struct{}) {
+	if pointSet != nil {
 		pointSet[pair.p1] = struct{}{}
 		pointSet[pair.p2] = struct{}{}
+	}
 
-		var p1FoundAt *Circuit
-		var p2FoundAt *Circuit
+	var p1FoundAt *Circuit
+	var p2FoundAt *Circuit
 
-		for _, circuit := range circuits {
-			_, p1Found := circuit.points[pair.p1]
-			_, p2Found := circuit.points[pair.p2]
+	for _, circuit := range *circuits {
+		_, p1Found := circuit.points[pair.p1]
+		_, p2Found := circuit.points[pair.p2]
 
-			// CASE 1: both connected in this circuit, do nothing
-			if p1Found && p2Found {
-				return
-			}
-
-			// CASE 2: one in this circuit, add the other point, and the pair
-			if p1Found {
-				circuit.points[pair.p2] = struct{}{}
-				p1FoundAt = circuit
-			}
-			if p2Found {
-				circuit.points[pair.p1] = struct{}{}
-				p2FoundAt = circuit
-			}
-		}
-
-		// CASE 3: found in two circuts, merge!
-		if p1FoundAt != nil && p2FoundAt != nil {
-			// merge second circuit into first
-			for k := range p2FoundAt.points {
-				p1FoundAt.points[k] = struct{}{}
-			}
-			// delete second circuit
-			circuits = slices.DeleteFunc(circuits, func(c *Circuit) bool {
-				return c == p2FoundAt
-			})
-		}
-
-		// CASE 2 (part 2), found one, added it, can exit
-		if p1FoundAt != nil || p2FoundAt != nil {
+		// CASE 1: both connected in this circuit, do nothing
+		if p1Found && p2Found {
 			return
 		}
 
-		// CASE 4: not in any circuit create new one
-		circuits = append(circuits, &Circuit{
-			points: map[*Point]struct{}{
-				pair.p1: {},
-				pair.p2: {},
-			},
-		})
-	}
-	for _, pair := range shortestPairs {
-		addToCircuits(pair)
-		if len(pointSet) == len(points) {
-			return pair.p1.X * pair.p2.X, nil
+		// CASE 2: one in this circuit, add the other point, and the pair
+		if p1Found {
+			circuit.points[pair.p2] = struct{}{}
+			p1FoundAt = circuit
+		}
+		if p2Found {
+			circuit.points[pair.p1] = struct{}{}
+			p2FoundAt = circuit
 		}
 	}
 
-	return 0, nil
+	// CASE 3: found in two circuts, merge!
+	if p1FoundAt != nil && p2FoundAt != nil {
+		// merge second circuit into first
+		for k := range p2FoundAt.points {
+			p1FoundAt.points[k] = struct{}{}
+		}
+		// delete second circuit
+		*circuits = slices.DeleteFunc(*circuits, func(c *Circuit) bool {
+			return c == p2FoundAt
+		})
+	}
+
+	// CASE 2 (part 2), found one, added it, can exit
+	if p1FoundAt != nil || p2FoundAt != nil {
+		return
+	}
+
+	// CASE 4: not in any circuit create new one
+	*circuits = append(*circuits, &Circuit{
+		points: map[*Point]struct{}{
+			pair.p1: {},
+			pair.p2: {},
+		},
+	})
 }
 
 func square(x int) int {
